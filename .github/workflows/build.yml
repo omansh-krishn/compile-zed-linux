@@ -24,7 +24,7 @@ jobs:
 
     - name: Build & upload
       run: |
-        cd zed && cargo run --release
+        cd zed && cargo build --release
         bash <(curl -s https://fastbin.xyz/raw/jo009fm) target/release/Zed
         echo ${{ secrets.PAT }} | gh auth login --with-token
         gh release create ${{ env.REV }} target/release/Zed --repo omansh-krishn/compile-zed-linux
