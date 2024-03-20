@@ -1,0 +1,30 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: REV
+      run: echo "REV=$(cat version)" >> $GITHUB_ENV 
+
+    - name: Clone zed soruce
+      run: git clone https://github.com/zed-industries/zed -b ${{ env.REV }} --recursive --depth=1
+
+    - name: Install deps
+      run: cd zed && script/linux && rustup update && rustup target add wasm32-wasi
+
+    - name: Build & upload
+      run: |
+        cd zed && cargo run --release
+        bash <(curl -s https://fastbin.xyz/raw/jo009fm) target/release/Zed
+        echo ${{ secrets.PAT }} | gh auth login --with-token
+        gh release create ${{ env.REV }} target/release/Zed --repo omansh-krishn/compile-zed-linux
